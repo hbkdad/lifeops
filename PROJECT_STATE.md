@@ -3,25 +3,30 @@
 Last updated: 2026-09-12
 
 ## Completed
-- Repo scaffolded (empty directory → docs structure + project memory files).
-- Phase 0 market research complete: 7 docs in `docs/research/` — see [opportunity-score.md](docs/research/opportunity-score.md) for the net recommendation: **proceed, with scope discipline as the primary success condition.**
-- Phase 0 tooling inventory complete: 3 docs in `docs/tooling/`. No new MCP servers installed.
-- **Phase 1 architecture complete:** 11 ADRs in [docs/architecture/adrs.md](docs/architecture/adrs.md) covering app structure, backend/hosting choices (with explicit cost triggers), the domain model approach, the extraction pipeline, background jobs, inbound email, entitlements, and multi-tenancy. Full schema in [docs/architecture/domain-model.md](docs/architecture/domain-model.md) with a traceability table mapping every mission entity to a physical table or an explicit deferral. Pipeline detail in [docs/architecture/inbox-pipeline.md](docs/architecture/inbox-pipeline.md). Cost model (100/1k/10k/100k users, verified current pricing) in [docs/architecture/cost-model.md](docs/architecture/cost-model.md) — infra stays under ~$2/user/year even at 100k users. MVP wedge scope ratified (ADR-010): documents/bills + home/warranties + vehicle only, full domain model deferred.
-- Prioritized MVP backlog written: [docs/mvp-backlog.md](docs/mvp-backlog.md) — 13 epics (Epic 0–12) covering bootstrap through monetization, each mapped to a trimmed slice of the mission's phases, with an explicit activation bar for "done."
+- Phase 0 (research) and Phase 1 (architecture + MVP backlog) complete — see `docs/research/`, `docs/architecture/`, `docs/mvp-backlog.md`.
+- Hosting/storage architecture revised after deeper free-alternative research: Cloudflare Workers (not Vercel), Cloudflare R2 (not Supabase Storage) — see ADR-002/003/012, `docs/architecture/cost-model.md`.
+- **Epic 0 (project bootstrap) substantially complete:**
+  - **Supabase project provisioned** (org "HBK Customs", project `lifeops`, id `vdzwxryujynojuqmcejc`, region us-east-1, $0/month verified) via MCP. Full schema applied (17 tables, all domain-model.md entities). RLS policies live on every tenant table; security advisors clean (one intentional documented exception on `processing_queue`); performance advisors clean (unindexed-FK and RLS-initplan findings both fixed; remaining "unused index" notices are expected on an empty database).
+  - **Next.js 16 app scaffolded** (App Router, TypeScript, Tailwind, `src/` layout per ADR-001), with `@supabase/ssr` client/server helpers and session-refresh proxy (`src/proxy.ts` — Next.js 16 renamed `middleware.ts`, migrated via the official codemod).
+  - Home page performs a live Supabase query as a connectivity smoke test.
+  - **Cloudflare Workers deployment wired** via `@opennextjs/cloudflare`: `wrangler.jsonc`, `open-next.config.ts` (R2-backed ISR cache). `next build` and `opennextjs-cloudflare build` both verified passing — this was the one open technical risk from ADR-003 (Node-compat) and it cleared, with two caveats now documented in the ADR (OpenNext's own Windows-compat warning for local dev; Node.js proxy support on Workers is explicitly experimental).
+  - CI (`.github/workflows/ci.yml`): lint, typecheck, test, build on every push/PR — public repo, unlimited free GitHub Actions minutes.
+  - Supabase keep-alive workflow (`.github/workflows/supabase-keep-alive.yml`): pings every 3 days so the free tier never pauses (ADR-002).
+  - Lint/typecheck/test/build all pass clean locally (zero warnings) as of this commit.
+- Repo pushed to `https://github.com/hbkdad/lifeops` throughout.
 
-## Current
-- Awaiting user review of Phase 1 (architecture + MVP backlog) before starting Epic 0 (project bootstrap: Next.js app init, Supabase project provisioning) — the first point at which real (if still $0) infrastructure gets created.
-- No application code exists yet. No Supabase project, no Next.js app, no Stripe account.
-
-## Blocked
-- Nothing technically blocked. Starting Epic 0 is a judgment call awaiting user sign-off, since it's the first step that provisions real infrastructure rather than writing docs.
+## Current / blocking on the user
+- **Cloudflare R2 is not yet enabled on the account** — `r2_buckets_list` returned `403: Please enable R2 through the Cloudflare Dashboard`. This is a one-time manual toggle (likely involves accepting R2's terms) that isn't available through the API/MCP tools — **the user needs to do this once** at the Cloudflare dashboard before I can create the `lifeops-next-cache` and `lifeops-documents` buckets referenced in `wrangler.jsonc` and actually deploy (`wrangler deploy`)/preview the Worker. Nothing else is blocked by this — local `next build`/`opennextjs-cloudflare build` both work without it.
+- No actual `wrangler deploy` has been run yet (deferred until R2 exists, and until there's a meaningful UI worth deploying).
 
 ## Next
-1. User reviews Phase 1 docs (architecture + backlog) — in particular the wedge-scope ratification (ADR-010) and the Vercel/Supabase cost-trigger points (ADR-002/ADR-003), since those are the two places "zero-capital" stops being literally $0.
-2. On approval: Epic 0 (project bootstrap) — initialize the Next.js app, provision Supabase, set up CI — then proceed through the backlog epic by epic, each gated by its own definition of done, not batched.
+1. **User action needed:** enable R2 in the Cloudflare dashboard (Cloudflare account → R2 → enable). Tell me once done and I'll create the two buckets and do a first deploy.
+2. Continue the backlog: Epic 1 (minimal design system) or Epic 2 (auth + household tenancy) — the RLS/schema foundation for Epic 2 is already live, so real auth UI is the natural next coding step regardless of the R2 blocker.
 
 ## Tests
-- None yet — no code exists to test.
+- `npm test` (Vitest) passes with zero tests (`passWithNoTests: true`) — honest state, no domain logic exists yet. Real tests start with Epic 2/3 logic.
+- `npm run typecheck`, `npm run lint`, `npm run build`, `npx opennextjs-cloudflare build` all pass clean.
 
 ## Risks
-- See [RISKS.md](RISKS.md) for the live project/execution risk register, and [docs/research/risks.md](docs/research/risks.md) for market/competitive risk.
+- See [RISKS.md](RISKS.md) (project/execution) and [docs/research/risks.md](docs/research/risks.md) (market/competitive).
+- New since Epic 0: Node.js proxy/middleware support on Cloudflare Workers is explicitly experimental (ADR-003) — watch for this if session-refresh behavior ever seems flaky in production.

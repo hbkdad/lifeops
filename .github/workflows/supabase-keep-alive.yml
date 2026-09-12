@@ -1,0 +1,20 @@
+name: Supabase keep-alive
+
+# Supabase's free tier pauses a project after 7 days with no database
+# activity. This makes one lightweight, public (RLS-readable) query every
+# 3 days so the free tier stays usable indefinitely without upgrading to
+# Pro on a "first user" schedule - see ADR-002 in docs/architecture/adrs.md.
+on:
+  schedule:
+    - cron: "0 12 */3 * *"
+  workflow_dispatch: {}
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Query a public table to register activity
+        run: |
+          curl --fail --silent --show-error \
+            "${{ vars.SUPABASE_URL }}/rest/v1/plans?select=id&limit=1" \
+            -H "apikey: ${{ vars.SUPABASE_PUBLISHABLE_KEY }}"

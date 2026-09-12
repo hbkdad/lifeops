@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-09-12 (4)
+- Epic 0 (project bootstrap) substantially complete: Supabase project `lifeops` provisioned ($0/month), full schema + RLS applied and hardened (security/performance advisors clean), Next.js 16 app scaffolded with Supabase SSR wiring, Cloudflare Workers deployment configured via OpenNext and build-verified (resolving the ADR-003 Node-compat risk), CI + a Supabase keep-alive workflow added. All local checks (lint/typecheck/test/build) pass clean.
+- Found and fixed along the way: a real Next.js 16 breaking change (`middleware.ts` → `proxy.ts`, migrated via the official codemod), an ESLint config gap that was linting the `.open-next` build output (15k+ false-positive problems), and two Supabase RLS advisor findings (SECURITY DEFINER helper functions reachable via public RPC; unwrapped `auth.uid()` causing per-row re-evaluation).
+- One blocker needs the user: Cloudflare R2 isn't enabled on the account yet (dashboard-only toggle, not available via API/MCP) — needed before the two R2 buckets can be created and before `wrangler deploy` can run.
+
 ## 2026-09-12 (3)
 - Revised hosting/storage architecture after user asked for a deeper look at free alternatives: hosting moved from Vercel to Cloudflare Workers (OpenNext, GA Feb 2026), document storage moved from Supabase Storage to Cloudflare R2, and corrected an earlier overly-pessimistic claim that Supabase requires a paid upgrade at first external user (it doesn't — commercial use is ToS-permitted and the inactivity pause has a $0 fix). See ADR-002/003/012 and updated cost-model.md.
 - Proceeding into Epic 0 (project bootstrap) per user instruction to continue autonomously until a genuine blocker (account creation, payment, or a decision only they can make) is hit.

@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 
 export async function createClient() {
   const cookieStore = await cookies();
@@ -25,4 +26,16 @@ export async function createClient() {
       },
     },
   );
+}
+
+/** Redirects to /login if there's no valid session; otherwise returns the user id. */
+export async function requireUserId(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+): Promise<string> {
+  const { data, error } = await supabase.auth.getClaims();
+  const userId = data?.claims?.sub;
+  if (error || !userId) {
+    redirect("/login");
+  }
+  return userId;
 }

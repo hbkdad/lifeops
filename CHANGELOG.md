@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-09-12 (2)
+- Phase 1 complete: architecture (`docs/architecture/adrs.md` — 11 ADRs, `domain-model.md`, `inbox-pipeline.md`, `cost-model.md`) and prioritized MVP backlog (`docs/mvp-backlog.md`, 13 epics).
+- Ratified the Phase 0 wedge-scope recommendation as ADR-010: MVP domains = documents/bills, home/warranties, vehicle only.
+- Verified current pricing for Supabase, Vercel, Cloudflare R2/Email Routing, GitHub Actions, and Claude API (via the `claude-api` skill) to ground the cost model in real numbers rather than assumptions. Net finding: infra cost stays under ~$2/user/year even at 100,000 users.
+- Flagged one real, if small, deviation from literal $0: Vercel Hobby's non-commercial-use restriction means Vercel Pro ($20/mo) is owed starting at the first external (even unpaid beta) user, not first revenue — documented in ADR-003 rather than glossed over.
+
 ## 2026-09-12
 - Repo scaffolded from an empty directory.
 - Phase 0 complete: market research (`docs/research/market.md`, `competitors.md`, `pain-points.md`, `differentiation.md`, `pricing.md`, `risks.md`, `opportunity-score.md`) and tooling inventory (`docs/tooling/tool-inventory.md`, `mcp-evaluation.md`, `security-review.md`), all grounded in live web search/fetch conducted this session.

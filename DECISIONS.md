@@ -19,9 +19,16 @@ Lightweight ADR-style record. Add a new entry per decision; do not edit past ent
 ---
 
 ## 2026-09-12 — Recommended MVP wedge narrower than the full domain model
-**Decision (proposed, pending Phase 1 architecture sign-off):** Target the ingestion → obligation/reminder → Today-screen loop across a narrow slice (documents/bills, home/warranties, vehicle) before building out the full 40+ entity domain model (pets, licenses, appointments, etc. come later).
+**Decision:** Target the ingestion → obligation/reminder → Today-screen loop across a narrow slice (documents/bills, home/warranties, vehicle) before building out the full 40+ entity domain model (pets, licenses, appointments, etc. come later).
 **Why:** Research shows the closest competitors (Lifey, Babs) are moving now, and a documented category failure mode (HomeZada: "comprehensive but overwhelming") punishes breadth-before-depth. See [docs/research/differentiation.md](docs/research/differentiation.md) and [docs/research/opportunity-score.md](docs/research/opportunity-score.md).
-**Status:** Proposed — not yet ratified. To be confirmed or overridden in the Phase 1 architecture proposal.
+**Status:** **Ratified in Phase 1 — see [ADR-010](docs/architecture/adrs.md#adr-010-mvp-wedge-scope--ratified)** and the concrete build sequence in [docs/mvp-backlog.md](docs/mvp-backlog.md).
+
+---
+
+## 2026-09-12 — Phase 1 architecture decisions
+**Decision:** 11 ADRs recorded covering monolith structure, Supabase/Vercel choices with explicit cost triggers, a type-discriminated schema instead of 40 literal tables, a tiered (deterministic-first) extraction pipeline, Postgres-native background jobs, Cloudflare Email Routing for inbound email, centralized entitlements, and RLS-based multi-tenancy.
+**Why:** Full reasoning, alternatives considered, and consequences are in [docs/architecture/adrs.md](docs/architecture/adrs.md) — not duplicated here to avoid this log and that doc drifting out of sync.
+**Status:** Active. This entry is a pointer, not a summary — read the ADRs directly before touching architecture.
 
 ---
 

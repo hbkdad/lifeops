@@ -4,20 +4,21 @@ Last updated: 2026-09-12
 
 ## Completed
 - Repo scaffolded (empty directory → docs structure + project memory files).
-- Phase 0 market research complete: 7 docs in `docs/research/` covering market timing, competitors, pain points, differentiation, pricing, risks, and an opportunity assessment — all grounded in live web search/fetch, not memory. See [docs/research/opportunity-score.md](docs/research/opportunity-score.md) for the net recommendation: **proceed, with scope discipline as the primary success condition.**
-- Phase 0 tooling inventory complete: 3 docs in `docs/tooling/` covering what's actually available in the current Claude Code session, an MCP-server evaluation checklist, and a security review of the dev-tooling layer. No new MCP servers were installed.
+- Phase 0 market research complete: 7 docs in `docs/research/` — see [opportunity-score.md](docs/research/opportunity-score.md) for the net recommendation: **proceed, with scope discipline as the primary success condition.**
+- Phase 0 tooling inventory complete: 3 docs in `docs/tooling/`. No new MCP servers installed.
+- **Phase 1 architecture complete:** 11 ADRs in [docs/architecture/adrs.md](docs/architecture/adrs.md) covering app structure, backend/hosting choices (with explicit cost triggers), the domain model approach, the extraction pipeline, background jobs, inbound email, entitlements, and multi-tenancy. Full schema in [docs/architecture/domain-model.md](docs/architecture/domain-model.md) with a traceability table mapping every mission entity to a physical table or an explicit deferral. Pipeline detail in [docs/architecture/inbox-pipeline.md](docs/architecture/inbox-pipeline.md). Cost model (100/1k/10k/100k users, verified current pricing) in [docs/architecture/cost-model.md](docs/architecture/cost-model.md) — infra stays under ~$2/user/year even at 100k users. MVP wedge scope ratified (ADR-010): documents/bills + home/warranties + vehicle only, full domain model deferred.
+- Prioritized MVP backlog written: [docs/mvp-backlog.md](docs/mvp-backlog.md) — 13 epics (Epic 0–12) covering bootstrap through monetization, each mapped to a trimmed slice of the mission's phases, with an explicit activation bar for "done."
 
 ## Current
-- Awaiting user review of Phase 0 research before proceeding to Phase 1 (architecture) and the MVP backlog proposal, per the mission's explicit instruction not to begin implementation until research + architecture have identified the smallest product capable of proving recurring consumer value.
-- No application code exists yet. No tech stack has been provisioned (no Supabase project, no Next.js app, no git remote pushed).
+- Awaiting user review of Phase 1 (architecture + MVP backlog) before starting Epic 0 (project bootstrap: Next.js app init, Supabase project provisioning) — the first point at which real (if still $0) infrastructure gets created.
+- No application code exists yet. No Supabase project, no Next.js app, no Stripe account.
 
 ## Blocked
-- Nothing is technically blocked. Proceeding to Phase 1 (architecture + ADRs) and the MVP backlog is a judgment call awaiting user sign-off, since it's the last checkpoint before real implementation begins and real (even if $0) infrastructure gets provisioned.
+- Nothing technically blocked. Starting Epic 0 is a judgment call awaiting user sign-off, since it's the first step that provisions real infrastructure rather than writing docs.
 
 ## Next
-1. User reviews Phase 0 docs.
-2. Propose architecture (ADRs) + prioritized MVP backlog, incorporating the research's key finding: ship the ingestion → obligation/reminder → Today-screen loop across a narrow 2–3 domain wedge first (documents/bills, home/warranties, vehicle), rather than the full 40+ entity model, to compete on speed against Lifey/Babs. See [docs/research/differentiation.md](docs/research/differentiation.md).
-3. On approval, initialize git, connect to `https://github.com/hbkdad/lifeops.git`, and push this Phase 0 baseline.
+1. User reviews Phase 1 docs (architecture + backlog) — in particular the wedge-scope ratification (ADR-010) and the Vercel/Supabase cost-trigger points (ADR-002/ADR-003), since those are the two places "zero-capital" stops being literally $0.
+2. On approval: Epic 0 (project bootstrap) — initialize the Next.js app, provision Supabase, set up CI — then proceed through the backlog epic by epic, each gated by its own definition of done, not batched.
 
 ## Tests
 - None yet — no code exists to test.

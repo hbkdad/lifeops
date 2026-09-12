@@ -32,6 +32,14 @@ Lightweight ADR-style record. Add a new entry per decision; do not edit past ent
 
 ---
 
+## 2026-09-12 — Hosting/storage revised after deeper free-alternative research
+**Decision:** Switched default hosting from Vercel to **Cloudflare Workers (OpenNext, GA since Feb 2026)**; moved document storage from Supabase Storage to **Cloudflare R2**; corrected the earlier claim that Supabase requires a paid upgrade at "first external user."
+**Why:** User explicitly asked for a harder look at free alternatives before proceeding. Research found: Supabase's free tier is ToS-permitted for commercial use with a documented $0 fix for its inactivity pause; Cloudflare's Next.js adapter is now production-GA with no non-commercial restriction; R2's free tier is larger than Supabase Storage's with zero egress cost. Full reasoning in [ADR-002](docs/architecture/adrs.md), [ADR-003](docs/architecture/adrs.md), [ADR-012](docs/architecture/adrs.md), updated numbers in [cost-model.md](docs/architecture/cost-model.md). Neon (with Neon Auth) was seriously evaluated as a Supabase alternative and not chosen — see ADR-002 for why.
+**How to apply:** Genuine $0 infra now plausibly extends into the thousands of users, not just pre-launch. Vercel remains a documented fallback specifically if Cloudflare Workers' Node-compatibility (`nodejs_compat`) breaks a load-bearing dependency (validate in Epic 0/4) — don't rediscover this reasoning from scratch if that happens.
+**Status:** Active — proceeding to implementation on this basis.
+
+---
+
 ## 2026-09-12 — Avoid the phrase "Family Operating System" in any public-facing copy
 **Decision:** Do not use "Family Operating System" (or close variants) in LifeOps marketing/branding.
 **Why:** Trustworthy holds this as a registered trademark (confirmed on their own pricing page, "The Family Operating System®"). "LifeOps" itself remains a working codename pending a trademark search before public launch.

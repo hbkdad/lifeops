@@ -10,10 +10,13 @@ Status: Phase 1. Per the mission's requirement: for every paid service, identify
 
 ## Per-service decision summary
 
+**Revised 2026-09-12** — deeper free-alternative research (prompted by user request) found the original hosting/DB cost triggers were more pessimistic than necessary. See ADR-002/ADR-003/ADR-012 for full reasoning.
+
 | Requirement | $0 approach used | Paid alternative considered | Why $0 approach wins at MVP scale |
 |---|---|---|---|
-| Postgres + Auth + Storage + RLS | Supabase Free → Pro at first external user | Self-hosted Postgres | Supabase Pro's $25/mo buys managed backups/no-pause well before self-hosting ops effort pays for itself (ADR-002) |
-| App hosting | Vercel Hobby (solo dev) → Pro at first external user | Cloudflare Workers (OpenNext) | Vercel Pro's $20/mo/seat is trivial; avoids adapter-maturity risk (ADR-003) |
+| Postgres + Auth + RLS | Supabase Free — commercial use is ToS-permitted; 7-day pause solved with a free GitHub Actions keep-alive ping (Epic 0) | Neon (comparable free tier + Neon Auth, seriously considered, not switching — ADR-002); Supabase Pro ($25/mo) once DB size/MAU telemetry actually approaches the free cap | No forced upgrade trigger at "first user" as originally assumed — real trigger is 500MB DB / 50k MAU, not a launch-day certainty |
+| Document/photo storage | Cloudflare R2 (10GB free, $0 egress always) | Supabase Storage (1GB free, bundled into Pro) | Larger free allowance, zero egress cost as documents accumulate, and removes storage from Supabase's constraint budget entirely (ADR-012) |
+| App hosting | Cloudflare Workers via OpenNext (GA Feb 2026) — free at commercial-friendly volume (100k req/day), no seat cost | Vercel Pro ($20/seat/mo) — kept as documented fallback if a Node-compat validation fails (ADR-003) | No non-commercial restriction (unlike Vercel Hobby), no per-seat cost ever, consolidates with email (Cloudflare) and storage (R2) onto one platform |
 | Document/extraction AI | Claude Haiku 4.5, usage-based, Tier-2-only | AWS Textract / Google Document AI, or AI-for-everything | Tiered approach means AI spend tracks actual need, not total volume (ADR-006) |
 | Inbound email | Cloudflare Email Routing + Workers | SendGrid Inbound Parse ($19.95/mo+), Mailgun ($15–90+/mo by volume) | Free at any modeled scale, no per-plan volume gate (ADR-008) — throughput unverified at scale, flagged in inbox-pipeline.md |
 | Background jobs | Postgres `processing_queue` + scheduled poll | Inngest/Trigger.dev/SQS | Avoids a new vendor before there's evidence of need (ADR-007) |
@@ -26,15 +29,16 @@ Figures are **monthly**, USD, and additive down each column. "Users" = individua
 
 | Line item | 100 users | 1,000 users | 10,000 users | 100,000 users |
 |---|---|---|---|---|
-| Supabase | $0 (free tier; ~130 households, well under 500MB DB) | $25 (Pro — 1,000 users likely exceeds free DB/storage caps) | $25–~$60 (Pro base + storage/egress overage, est.) | ~$300–600 (Pro base + meaningful overage at 8GB DB / 100GB storage / 250GB egress ceilings — re-model with real per-user storage once measured) |
-| Vercel | $0 (Hobby, solo dev only) | $20 (Pro, 1 seat) | $20–$40 (possible bandwidth overage beyond 1TB) | $20–~$150 (overage-dependent; revisit Cloudflare fallback per ADR-003 if this climbs) |
+| Supabase (DB+Auth only, no file storage) | $0 (free; metadata-only rows, nowhere near 500MB) | $0 (free tier plausibly still covers this — re-check actual DB size, not a calendar date) | $0–$25 (Pro only if 500MB DB or 50k MAU is actually approached) | $25 (Pro — DB size at this scale likely does warrant it) |
+| Cloudflare R2 (document storage) | $0 (well under 10GB) | $0 | $0–$15 (est., depends on avg. document size/retention — instrument early) | ~$15–40 (est.) |
+| Cloudflare Workers (hosting) | $0 | $0 | $0 (well under 100k req/day) | $0–modest (re-check request volume against the free allowance as it's confirmed at this scale) |
 | Cloudflare Email Routing | $0 | $0 | $0 (unverified at this volume — flagged) | $0 (unverified — flagged, re-test) |
 | AI extraction (Haiku 4.5, Tier 2 only) | ~$1.20 (100 × 8 × 40% × ~$0.004/doc) | ~$12 | ~$120 | ~$1,200 |
 | GitHub Actions | $0 (public repo, unlimited minutes) | $0 | $0 | $0 |
 | Stripe processing fees | pass-through, ~2.9%+$0.30/txn on whatever revenue exists | pass-through | pass-through | pass-through |
-| **Total fixed infra (excl. Stripe passthrough)** | **~$1–2** | **~$57** | **~$165–225** | **~$1,520–1,950** |
+| **Total fixed infra (excl. Stripe passthrough)** | **~$1–2** | **~$12** | **~$120–160** | **~$1,240–1,265** |
 
-**Read:** Infra cost stays well under $2/user/year even at 100,000 users, against a proposed Plus/Family pricing band of $70–160/user-household/year (pricing.md) — infra is not the constraint on unit economics at any modeled scale. The AI-extraction line is deliberately the largest variable cost because it's the one most directly tied to product usage (more engagement → more documents → more Tier 2 calls), which is the right thing for a cost line to track.
+**Read:** With storage moved to R2 and hosting moved to Cloudflare Workers, genuine $0 infra cost plausibly extends into the thousands of users — materially better than the original model's "$20–45/mo starting at first user" story, and the correction came directly from being asked to look harder rather than accept the first reasonable-sounding answer. The AI-extraction line remains the dominant variable cost by design (ADR-006) because it's the one line that scales with actual product usage rather than headcount.
 
 ## What would break this model (watch for these, don't pre-solve them)
 - Tier 2 AI hit rate meaningfully above the assumed 40% (e.g., if most users primarily photograph rather than forward) — cheap to re-measure once real usage data exists; Haiku 4.5 cost is low enough that even a 2–3x miss on this assumption doesn't change the qualitative conclusion.

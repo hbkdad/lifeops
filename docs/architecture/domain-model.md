@@ -102,7 +102,7 @@ inbox_items (
   id uuid primary key default gen_random_uuid(),
   household_id uuid references households(id),
   source text not null check (source in ('upload','email','paste','photo')),
-  raw_storage_path text, -- Supabase Storage path; null for paste
+  raw_storage_path text, -- Cloudflare R2 object key; null for paste
   raw_text text, -- paste content, or extracted email body
   status text not null default 'pending' check (status in ('pending','processing','needs_review','confirmed','rejected','failed')),
   submitted_by uuid references people(id),
@@ -147,7 +147,7 @@ processing_queue ( -- ADR-007
 documents (
   id uuid primary key default gen_random_uuid(),
   household_id uuid references households(id),
-  storage_path text not null,
+  storage_path text not null, -- Cloudflare R2 object key (ADR-012), not Supabase Storage
   original_filename text,
   mime_type text not null,
   file_size_bytes bigint,

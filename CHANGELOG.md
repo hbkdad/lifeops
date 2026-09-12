@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-09-12 (3)
+- Revised hosting/storage architecture after user asked for a deeper look at free alternatives: hosting moved from Vercel to Cloudflare Workers (OpenNext, GA Feb 2026), document storage moved from Supabase Storage to Cloudflare R2, and corrected an earlier overly-pessimistic claim that Supabase requires a paid upgrade at first external user (it doesn't — commercial use is ToS-permitted and the inactivity pause has a $0 fix). See ADR-002/003/012 and updated cost-model.md.
+- Proceeding into Epic 0 (project bootstrap) per user instruction to continue autonomously until a genuine blocker (account creation, payment, or a decision only they can make) is hit.
+
 ## 2026-09-12 (2)
 - Phase 1 complete: architecture (`docs/architecture/adrs.md` — 11 ADRs, `domain-model.md`, `inbox-pipeline.md`, `cost-model.md`) and prioritized MVP backlog (`docs/mvp-backlog.md`, 13 epics).
 - Ratified the Phase 0 wedge-scope recommendation as ADR-010: MVP domains = documents/bills, home/warranties, vehicle only.

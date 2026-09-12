@@ -1,0 +1,17 @@
+# Opportunity Assessment
+
+Status: Phase 0 synthesis. Scored 1–5 (5 = most favorable) against evidence gathered in market.md/competitors.md/pain-points.md/risks.md. This is a judgment call, not a formula — shown for reasoning transparency.
+
+| Factor | Score | Reasoning |
+|---|---|---|
+| **Market timing** | 4/5 | Active investment from an incumbent (Quicken) and funded-looking startups (Trustworthy, Lifey, Babs) in the last 12–18 months confirms the window is open and validated, not speculative. Slightly held back from 5 because that same activity means the window is closing, not indefinite. |
+| **Willingness to pay** | 4/5 | Every adjacent single-domain product (Vorby, Dex, HomeZada, Trustworthy, Rocket Money) has a paying user base at $5–40/mo. Direct evidence, not inference. |
+| **Differentiation defensibility** | 3/5 | The full cross-domain life-graph is genuinely unclaimed, but the underlying mechanic (forward/photograph → AI extraction) is not novel and is actively being built by at least two other teams. Defensibility comes from execution breadth + trust posture, not a hard technical moat. |
+| **Zero-capital feasibility** | 4/5 | Core mechanic (document ingestion, extraction, reminders, vault, calendar) is buildable on free/usage-based tiers (Supabase, Postgres, open-source OCR/extraction models) without paid AI inference required for basic function, consistent with the mission's constraint. Slightly held back because production-grade extraction quality may eventually pressure toward paid model APIs for accuracy — must keep the provider abstraction real, not aspirational. |
+| **Competitive intensity (inverted: lower intensity = higher score)** | 3/5 | Not a blue ocean — at least 4 credible competitors (Trustworthy, Quicken LifeHub, Lifey, Babs) are active in overlapping territory today, plus 8+ single-domain incumbents. Manageable because none has the full cross-domain graph, but this is a real, contested space, not empty territory. |
+| **Trust/retention moat potential** | 4/5 | Pain-points research shows every major competitor has a documented, public trust failure (Cozi's paywall backlash, Rocket Money's fee complaints, Centriq's shutdown, HomeZada's billing complaints). A product that is deliberately, provably better on trust-by-design has a real opening that isn't about features at all. |
+| **Execution risk given scope (40+ entity domain model)** | 2/5 | The mission's full domain model is large. Pain-points research (HomeZada's "overwhelming" feedback) suggests shipping the full scope before validating the core loop is itself a risk, not just a resourcing question. Mitigated by the wedge strategy in differentiation.md, but this remains the single biggest self-inflicted risk factor if not actively managed. |
+
+## Net read
+
+**Proceed, with scope discipline as the primary success condition.** The market opportunity, timing, and willingness-to-pay evidence are strong and externally validated. The primary risk is not "does this market exist" (it clearly does) — it's "can we ship the narrow cross-domain wedge fast enough, with a trust-by-design posture, before the two closest competitors (Lifey, Babs) or a well-capitalized incumbent (Trustworthy, Quicken) close the specific gap we're targeting." This should directly shape the MVP backlog: prioritize the ingestion→obligation→Today loop across a narrow 2–3 domain slice over full domain-model completeness.

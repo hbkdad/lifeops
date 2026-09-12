@@ -3,30 +3,28 @@
 Last updated: 2026-09-12
 
 ## Completed
-- Phase 0 (research) and Phase 1 (architecture + MVP backlog) complete — see `docs/research/`, `docs/architecture/`, `docs/mvp-backlog.md`.
-- Hosting/storage architecture revised after deeper free-alternative research: Cloudflare Workers (not Vercel), Cloudflare R2 (not Supabase Storage) — see ADR-002/003/012, `docs/architecture/cost-model.md`.
-- **Epic 0 (project bootstrap) substantially complete:**
-  - **Supabase project provisioned** (org "HBK Customs", project `lifeops`, id `vdzwxryujynojuqmcejc`, region us-east-1, $0/month verified) via MCP. Full schema applied (17 tables, all domain-model.md entities). RLS policies live on every tenant table; security advisors clean (one intentional documented exception on `processing_queue`); performance advisors clean (unindexed-FK and RLS-initplan findings both fixed; remaining "unused index" notices are expected on an empty database).
-  - **Next.js 16 app scaffolded** (App Router, TypeScript, Tailwind, `src/` layout per ADR-001), with `@supabase/ssr` client/server helpers and session-refresh proxy (`src/proxy.ts` — Next.js 16 renamed `middleware.ts`, migrated via the official codemod).
-  - Home page performs a live Supabase query as a connectivity smoke test.
-  - **Cloudflare Workers deployment wired** via `@opennextjs/cloudflare`: `wrangler.jsonc`, `open-next.config.ts` (R2-backed ISR cache). `next build` and `opennextjs-cloudflare build` both verified passing — this was the one open technical risk from ADR-003 (Node-compat) and it cleared, with two caveats now documented in the ADR (OpenNext's own Windows-compat warning for local dev; Node.js proxy support on Workers is explicitly experimental).
-  - CI (`.github/workflows/ci.yml`): lint, typecheck, test, build on every push/PR — public repo, unlimited free GitHub Actions minutes.
-  - Supabase keep-alive workflow (`.github/workflows/supabase-keep-alive.yml`): pings every 3 days so the free tier never pauses (ADR-002).
-  - Lint/typecheck/test/build all pass clean locally (zero warnings) as of this commit.
-- Repo pushed to `https://github.com/hbkdad/lifeops` throughout.
+- Phase 0 (research) and Phase 1 (architecture + MVP backlog) complete.
+- **Epic 0 (bootstrap) complete:** Supabase project `lifeops` provisioned and hardened (17 tables, full RLS, security/performance advisors clean bar one documented exception), Next.js 16 app scaffolded, Cloudflare Workers deployment build-verified, CI + Supabase keep-alive workflow green on GitHub.
+- **Epic 2 (auth + household tenancy) complete and verified live in a browser** (not just build-clean):
+  - Signup/login/logout, Supabase Auth email+password with standard confirmation flow.
+  - `create_household()` RPC + households module; households list, create, and detail pages with member roster.
+  - Full loop tested end-to-end against the real Supabase project: signup → confirm → login → create household → view members → logout.
+  - **Two real security bugs found via deliberate adversarial testing and fixed** (see ADR-011 addendum in `docs/architecture/adrs.md`): an `INSERT...RETURNING`-vs-RLS chicken-and-egg bug in household creation, and a live privilege-escalation path in the `household_members` insert policy (any authenticated user could have claimed ownership of a memberless household). Both closed and reverified.
+  - Also fixed an ambiguous PostgREST embed bug (ordinary bug, not security) in the member-roster query.
+  - All test data cleaned up afterward — database is genuinely empty, ready for real use.
 
-## Current / blocking on the user
-- **Cloudflare R2 is not yet enabled on the account** — `r2_buckets_list` returned `403: Please enable R2 through the Cloudflare Dashboard`. This is a one-time manual toggle (likely involves accepting R2's terms) that isn't available through the API/MCP tools — **the user needs to do this once** at the Cloudflare dashboard before I can create the `lifeops-next-cache` and `lifeops-documents` buckets referenced in `wrangler.jsonc` and actually deploy (`wrangler deploy`)/preview the Worker. Nothing else is blocked by this — local `next build`/`opennextjs-cloudflare build` both work without it.
-- No actual `wrangler deploy` has been run yet (deferred until R2 exists, and until there's a meaningful UI worth deploying).
+## Current / needs the user
+1. **Cloudflare R2 not yet enabled** — one-time dashboard toggle (Cloudflare account → R2 → enable), not available via API. Needed before the two R2 buckets can be created and before `wrangler deploy` runs. Nothing else is blocked by this.
+2. **Supabase "leaked password protection" is off** — a one-click toggle in Supabase Dashboard → Authentication → Policies (checks new passwords against HaveIBeenPwned). No API/MCP path to enable it found; recommend turning it on.
+3. **Supabase's shared free-tier email sender has a low rate limit** (confirmed: hit it after 2 signups in a few minutes during testing). Not blocking now (solo dev), but a custom SMTP provider (e.g. Resend) needs to be configured in Supabase Auth settings before real user testing — tracked in RISKS.md as a Phase 3 exit criterion.
 
 ## Next
-1. **User action needed:** enable R2 in the Cloudflare dashboard (Cloudflare account → R2 → enable). Tell me once done and I'll create the two buckets and do a first deploy.
-2. Continue the backlog: Epic 1 (minimal design system) or Epic 2 (auth + household tenancy) — the RLS/schema foundation for Epic 2 is already live, so real auth UI is the natural next coding step regardless of the R2 blocker.
+- Epic 1 (minimal design system) or continuing further into Epic 3 (core records: assets/organizations/obligations) — both are unblocked. Epic 3 builds directly on the now-verified auth/tenancy foundation.
+- Household member invitation (mentioned as a stub on the detail page) is the natural next slice of Epic 2 if collaboration is prioritized before core records.
 
 ## Tests
-- `npm test` (Vitest) passes with zero tests (`passWithNoTests: true`) — honest state, no domain logic exists yet. Real tests start with Epic 2/3 logic.
-- `npm run typecheck`, `npm run lint`, `npm run build`, `npx opennextjs-cloudflare build` all pass clean.
+- `npm test`, `npm run typecheck`, `npm run lint`, `npm run build`, `npx opennextjs-cloudflare build` all pass clean, verified both locally and in CI.
+- Auth + household flow manually verified end-to-end in a real browser against the live database (see Epic 2 above) — no automated Playwright/Vitest tests written for it yet; that's real debt, not an oversight to gloss over. Worth prioritizing before this surface grows further.
 
 ## Risks
-- See [RISKS.md](RISKS.md) (project/execution) and [docs/research/risks.md](docs/research/risks.md) (market/competitive).
-- New since Epic 0: Node.js proxy/middleware support on Cloudflare Workers is explicitly experimental (ADR-003) — watch for this if session-refresh behavior ever seems flaky in production.
+- See [RISKS.md](RISKS.md) (project/execution, now includes the email rate-limit finding) and [docs/research/risks.md](docs/research/risks.md) (market/competitive).

@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-09-12 (5)
+- Epic 2 (auth + household tenancy) complete: signup/login/logout, email confirmation, `create_household()` RPC, households list/create/detail pages. Verified end-to-end in a real browser against the live Supabase project.
+- Found and fixed two real security bugs via deliberate adversarial RLS testing (not just positive-path testing): an INSERT...RETURNING-vs-RLS ordering bug, and a live privilege-escalation path in `household_members`'s insert policy. Both documented in ADR-011 and closed. Also fixed an unrelated ambiguous-embed PostgREST bug.
+- Confirmed Supabase's shared free-tier email sender has a real, low rate limit (hit it after 2 test signups) — noted in RISKS.md as needing a custom SMTP provider before real launch.
+- All test data cleaned up; database is empty and ready for real use.
+
 ## 2026-09-12 (4)
 - Epic 0 (project bootstrap) substantially complete: Supabase project `lifeops` provisioned ($0/month), full schema + RLS applied and hardened (security/performance advisors clean), Next.js 16 app scaffolded with Supabase SSR wiring, Cloudflare Workers deployment configured via OpenNext and build-verified (resolving the ADR-003 Node-compat risk), CI + a Supabase keep-alive workflow added. All local checks (lint/typecheck/test/build) pass clean.
 - Found and fixed along the way: a real Next.js 16 breaking change (`middleware.ts` → `proxy.ts`, migrated via the official codemod), an ESLint config gap that was linting the `.open-next` build output (15k+ false-positive problems), and two Supabase RLS advisor findings (SECURITY DEFINER helper functions reachable via public RPC; unwrapped `auth.uid()` causing per-row re-evaluation).
